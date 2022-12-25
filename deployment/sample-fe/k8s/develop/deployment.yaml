@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-app
+  labels:
+    app: sample-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      project: sample-fe
+  template:
+    metadata:
+      labels:
+        project: sample-fe  # Service will look for those Pods labels
+    spec:
+      containers:
+        - name: sample-fe
+          image: tertalex/sentinel-sample-fe:latest
+          ports:
+            - containerPort: 80

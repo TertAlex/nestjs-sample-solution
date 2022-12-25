@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sample-fe
+  labels:
+    env: prod
+    app: sample-fe
+    tier: front-end
+    owner: TertAlex
+spec:
+  containers:
+    - name: container-sample-fe
+      image: tertalex/sentinel-sample-fe:latest
+      ports:
+        - containerPort: 80
+    - name: container-api
+      image: tomcat:8.5.38
+      ports:
+        - containerPort: 8080

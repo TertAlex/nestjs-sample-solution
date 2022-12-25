@@ -1,11 +1,29 @@
-FROM node:16.13.1-stretch
+# build for production
+FROM node:18.12.1-alpine AS build
 
-ADD ./sample.api /app/sample.api
+ADD ./sample-api /usr/src/app
+WORKDIR /usr/src/app
 
-WORKDIR /app/sample.api
-RUN npm i
+COPY --chown=node:node package*.json ./
+
+RUN npm ci
+
+COPY --chown=node:node . .
+
 RUN npm run build
+
+ENV NODE_ENV production
+
+RUN npm prune --production
+
+USER node
+
+# production
+FROM node:18.12.1-alpine AS production
+
+COPY --chown=node:node --from=build /usr/src/app/node_modules ./node_modules
+COPY --chown=node:node --from=build /usr/src/app/dist ./
 
 EXPOSE 3000
 
-CMD ["node", "./dist/main.js"]
+CMD ["node", "./src/main.js"]
