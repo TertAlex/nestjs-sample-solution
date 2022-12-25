@@ -1,8 +1,14 @@
 {
-  "devDependencies": {
-    "husky": "^8.0.2"
-  },
+  "name": "sample-solution",
   "scripts": {
-    "prepare": "husky install"
-  }
+    "prepare": "husky install",
+    "pre-commit": "lerna run lint --since HEAD"
+  },
+  "devDependencies": {
+    "husky": "^8.0.2",
+    "lerna": "^6.1.0"
+  },
+  "workspaces": [
+    "*"
+  ]
 }
