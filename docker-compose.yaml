@@ -1,0 +1,201 @@
+version: '3.9'
+
+services:
+  traefik:
+    container_name: traefik
+    image: traefik:v2.9.1
+    restart: unless-stopped
+    command:
+      - "--log.level=DEBUG"
+      - '--api.insecure=true'
+      - '--providers.docker=true'
+      - '--providers.docker.exposedbydefault=false'
+      - '--entrypoints.web.address=:80'
+      - '--entrypoints.hotreload.address=:10000'
+    ports:
+      - '80:80'
+      - '8080:8080'
+      - '10000:10000'
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock:ro'
+    networks:
+      - sample-app-network
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: bitnami/rabbitmq:3.8.14
+    restart: unless-stopped
+    environment:
+      - RABBITMQ_VHOST=$RABBITMQ_VHOST
+      - RABBITMQ_USERNAME=$RABBITMQ_USERNAME
+      - RABBITMQ_PASSWORD=$RABBITMQ_PASSWORD
+      - RABBITMQ_PLUGINS=rabbitmq_prometheus,rabbitmq_management
+    healthcheck:
+      test: [ 'CMD', 'curl', '-f', 'http://localhost:15672' ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    volumes:
+      - rabbitmq-storage:/bitnami
+    ports:
+      - '15672:15672'
+      - '15692:15692'
+      - '5672:5672'
+    networks:
+      - sample-app-network
+
+  redis:
+    container_name: redis
+    image: redis:6.2-alpine
+    restart: unless-stopped
+    volumes:
+      - redis-storage:/data
+    ports:
+      - '6379:6379'
+    networks:
+      - sample-app-network
+
+  redis-commander:
+    container_name: redis-commander
+    image: rediscommander/redis-commander:latest
+    environment:
+      - REDIS_HOSTS=local:sample-app-redis:6379
+    ports:
+      - '8085:8081'
+    depends_on:
+      - redis
+    networks:
+      - sample-app-network
+
+  mongo:
+    container_name: mongo
+    image: mongo:latest
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: $MONGO_ROOT_USERNAME
+      MONGO_INITDB_ROOT_PASSWORD: $MONGO_ROOT_PASSWORD
+    volumes:
+      - mongo-storage:/data/configdb
+      - mongo-storage:/data/db
+    ports:
+      - '27017:27017'
+    networks:
+      - sample-app-network
+
+  mysql:
+    container_name: mysql
+    image: mysql:5.7.40
+    restart: unless-stopped
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      - MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
+      - MYSQL_PASSWORD=$MYSQL_PASSWORD
+      - MYSQL_USER=$MYSQL_USER
+      - MYSQL_DATABASE=sample-app
+    volumes:
+      - mysql-storage:/var/lib/mysql
+    ports:
+      - '3306:3306'
+    networks:
+      - sample-app-network
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:v2.40.6
+    restart: unless-stopped
+    volumes:
+      - prometheus-storage:/prometheus
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - '9090:9090'
+    networks:
+      - sample-app-network
+    depends_on:
+      - mongodb-exporter
+      - mysqld-exporter
+      - redis
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:9.3.1
+    restart: unless-stopped
+    links:
+      - prometheus:prometheus
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_ADMIN_PASSWORD
+    ports:
+      - '9091:3000'
+    networks:
+      - sample-app-network
+    depends_on:
+      - redis
+      - prometheus
+      - mongodb-exporter
+      - mysqld-exporter
+
+  mongodb-exporter:
+    container_name: mongodb-exporter
+    image: percona/mongodb_exporter:0.30.0
+    restart: unless-stopped
+    volumes:
+      - mongodb-exporter-storage:/data/db
+    environment:
+      - MONGODB_URI=$MONGO_EXPORTER_MONGODB_URI
+    command:
+      - '--compatible-mode'
+      - '--discovering-mode'
+    ports:
+      - '9216:9216'
+    networks:
+      - sample-app-network
+    depends_on:
+      - mongo
+
+  mysqld-exporter:
+    container_name: mysqld-exporter
+    image: prom/mysqld-exporter:v0.12.1
+    restart: unless-stopped
+    command:
+      - '--collect.info_schema.tablestats'
+    environment:
+      - DATA_SOURCE_NAME=$MYSQL_EXPORTER_DATA_SOURCE
+    ports:
+      - '9104:9104'
+    links:
+      - mysql
+    networks:
+      - sample-app-network
+    depends_on:
+      - mysql
+
+volumes:
+  mongo-storage:
+    name: sample-app-mongo-storage
+    driver: local
+  mysql-storage:
+    name: sample-app-mysql-storage
+    driver: local
+  rabbitmq-storage:
+    name: sample-app-rabbitmq-storage
+    driver: local
+  redis-storage:
+    name: sample-app-redis-storage
+    driver: local
+  prometheus-storage:
+    name: sample-app-prometheus-storage
+    driver: local
+  grafana-storage:
+    name: sample-app-grafana-storage
+    driver: local
+  mongodb-exporter-storage:
+    name: mongodb-exporter-storage
+    driver: local
+
+networks:
+  sample-app-network:
+    name: sample-app-network
+    driver: bridge

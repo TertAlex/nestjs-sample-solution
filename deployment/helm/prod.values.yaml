@@ -1,0 +1,4 @@
+container:
+  image: tertalex/sentinel-sample-fe:latest
+
+replicaCount: 3

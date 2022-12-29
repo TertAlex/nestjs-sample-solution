@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tomcat
+  labels:
+    app: tomcat
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      project: tomcat
+  template:
+    metadata:
+      labels:
+        project: tomcat  # Service will look for those Pods labels
+    spec:
+      containers:
+        - name: container-api
+          image: tomcat:8.5.38
+          ports:
+            - containerPort: 8080

@@ -1,0 +1,16 @@
+apiVersion: v2
+name: sample-app
+description: Helm Chart for kubernetes
+type: application
+version: 0.0.1
+appVersion: "0.0.1"
+
+keywords:
+  - nestjs
+  - http
+  - https
+  - nginx
+
+maintainers:
+  - name: Oleksii Tertytskyi
+    email: tert.alex@gmail.com

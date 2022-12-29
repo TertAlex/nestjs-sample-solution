@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sample-solution
+spec:
+  rules:
+    - host: cat.adv-it.net
+      http:
+        paths:
+          - path: '/'
+            pathType: Prefix
+            backend:
+              service:
+                name: tomcat
+                port:
+                  number: 8088
+
+    - host: web1.adv-it.net
+      http:
+        paths:
+          - path: '/'
+            pathType: Prefix
+            backend:
+              service:
+                name: sample-fe
+                port:
+                  number: 8087
+

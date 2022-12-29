@@ -9,8 +9,8 @@ spec:
   selector:
     project: sample-fe  # Selecting Pods with those labels
   ports:
-    - name: app-listener
+    - name: web-listener
       protocol: TCP
-      port: 80        # Port on Load Balancer
+      port: 8087      # Port on Load Balancer
       targetPort: 80  # Port on Pod
   type: LoadBalancer

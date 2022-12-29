@@ -1,0 +1,4 @@
+cloneHtdocsFromGit:
+  enabled: true
+  repository: https://github.com/adv4000/simplewebpage
+  branch: main
