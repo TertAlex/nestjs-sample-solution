@@ -1,14 +1,13 @@
 {
   "name": "sample-solution",
+  "version": "0.0.2",
+  "license": "MIT",
   "scripts": {
     "prepare": "husky install",
     "pre-commit": "lerna run lint --since HEAD"
   },
   "devDependencies": {
-    "husky": "^8.0.2",
-    "lerna": "^6.1.0"
-  },
-  "workspaces": [
-    "*"
-  ]
+    "husky": "8.0.2",
+    "lerna": "6.1.0"
+  }
 }
