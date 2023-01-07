@@ -1,21 +1,20 @@
-FROM node:16.13.1-stretch AS BUILDER
+FROM node:18.12.1-bullseye-slim AS build
 
 WORKDIR /app/
 
-ADD . .
+COPY --chown=node:node package*.json ./
+RUN npm ci
 
-WORKDIR /app/sample-fe
+COPY . .
+RUN npm run build:production &&  \
+    npm prune --omit=dev
 
-RUN npm i
-RUN node --max_old_space_size=8192
-RUN npm run build
-
-FROM nginx:stable-alpine
+FROM nginx:1.23.3-alpine-slim
 
 WORKDIR /var/www
 
-COPY --from=BUILDER /app/sample-fe/dist/sample-fe ./
-COPY --from=BUILDER /app/sample-fe/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist/sample-fe ./
+COPY --from=build /app/nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 

@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   traefik:
-    container_name: traefik
+    container_name: sample-app-traefik
     image: traefik:v2.9.1
     restart: unless-stopped
     command:
@@ -22,7 +22,7 @@ services:
       - sample-app-network
 
   rabbitmq:
-    container_name: rabbitmq
+    container_name: sample-app-rabbitmq
     image: bitnami/rabbitmq:3.8.14
     restart: unless-stopped
     environment:
@@ -45,7 +45,7 @@ services:
       - sample-app-network
 
   redis:
-    container_name: redis
+    container_name: sample-app-redis
     image: redis:6.2-alpine
     restart: unless-stopped
     volumes:
@@ -56,7 +56,7 @@ services:
       - sample-app-network
 
   redis-commander:
-    container_name: redis-commander
+    container_name: sample-app-redis-commander
     image: rediscommander/redis-commander:latest
     environment:
       - REDIS_HOSTS=local:sample-app-redis:6379
@@ -68,22 +68,21 @@ services:
       - sample-app-network
 
   mongo:
-    container_name: mongo
-    image: mongo:latest
+    container_name: sample-app-mongo
+    image: bitnami/mongodb:6.0.3
     restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: $MONGO_ROOT_USERNAME
-      MONGO_INITDB_ROOT_PASSWORD: $MONGO_ROOT_PASSWORD
+      MONGODB_ROOT_USER: $MONGO_ROOT_USERNAME
+      MONGODB_ROOT_PASSWORD: $MONGO_ROOT_PASSWORD
     volumes:
-      - mongo-storage:/data/configdb
-      - mongo-storage:/data/db
+      - mongo-storage:/bitnami/mongodb
     ports:
       - '27017:27017'
     networks:
       - sample-app-network
 
   mysql:
-    container_name: mysql
+    container_name: sample-app-mysql
     image: mysql:5.7.40
     restart: unless-stopped
     command: --default-authentication-plugin=mysql_native_password
@@ -100,7 +99,7 @@ services:
       - sample-app-network
 
   prometheus:
-    container_name: prometheus
+    container_name: sample-app-prometheus
     image: prom/prometheus:v2.40.6
     restart: unless-stopped
     volumes:
@@ -113,12 +112,10 @@ services:
     networks:
       - sample-app-network
     depends_on:
-      - mongodb-exporter
-      - mysqld-exporter
-      - redis
+      [ redis, mongodb-exporter, mysqld-exporter ]
 
   grafana:
-    container_name: grafana
+    container_name: sample-app-grafana
     image: grafana/grafana:9.3.1
     restart: unless-stopped
     links:
@@ -132,13 +129,10 @@ services:
     networks:
       - sample-app-network
     depends_on:
-      - redis
-      - prometheus
-      - mongodb-exporter
-      - mysqld-exporter
+      [ redis, prometheus, mongodb-exporter, mysqld-exporter ]
 
   mongodb-exporter:
-    container_name: mongodb-exporter
+    container_name: sample-app-mongodb-exporter
     image: percona/mongodb_exporter:0.30.0
     restart: unless-stopped
     volumes:
@@ -156,7 +150,7 @@ services:
       - mongo
 
   mysqld-exporter:
-    container_name: mysqld-exporter
+    container_name: sample-app-mysqld-exporter
     image: prom/mysqld-exporter:v0.12.1
     restart: unless-stopped
     command:
@@ -172,27 +166,49 @@ services:
     depends_on:
       - mysql
 
+  sample-fe:
+    container_name: sample-fe
+    image: sample-fe
+    restart: unless-stopped
+    build:
+      context: ./sample-fe
+    ports:
+      - '40080:80'
+    networks:
+      - sample-app-network
+
+  sample-api:
+    container_name: sample-api
+    image: sample-api
+    restart: unless-stopped
+    build:
+      context: ./sample-api
+    ports:
+      - '3000:3000'
+    networks:
+      - sample-app-network
+
 volumes:
   mongo-storage:
-    name: sample-app-mongo-storage
+    name: sample-app-mongo
     driver: local
   mysql-storage:
-    name: sample-app-mysql-storage
+    name: sample-app-mysql
     driver: local
   rabbitmq-storage:
-    name: sample-app-rabbitmq-storage
+    name: sample-app-rabbitmq
     driver: local
   redis-storage:
-    name: sample-app-redis-storage
+    name: sample-app-redis
     driver: local
   prometheus-storage:
-    name: sample-app-prometheus-storage
+    name: sample-app-prometheus
     driver: local
   grafana-storage:
-    name: sample-app-grafana-storage
+    name: sample-app-grafana
     driver: local
   mongodb-exporter-storage:
-    name: mongodb-exporter-storage
+    name: sample-app-mongodb-exporter
     driver: local
 
 networks:
