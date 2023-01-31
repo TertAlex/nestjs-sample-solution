@@ -1,0 +1,19 @@
+{
+  "family": "dev-sample-fe",
+  "networkMode": "bridge",
+  "containerDefinitions": [
+    {
+      "name": "dev-sample-fe",
+      "memoryReservation": 32,
+      "portMappings": [
+        {
+          "containerPort": 80,
+          "hostPort": 0,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "environment": []
+    }
+  ]
+}

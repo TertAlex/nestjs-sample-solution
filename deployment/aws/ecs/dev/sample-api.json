@@ -1,0 +1,19 @@
+{
+  "family": "dev-sample-api",
+  "networkMode": "bridge",
+  "containerDefinitions": [
+    {
+      "name": "dev-sample-api",
+      "memoryReservation": 128,
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "hostPort": 0,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "environment": []
+    }
+  ]
+}
