@@ -7,6 +7,8 @@
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
       <excludeFolder url="file://$MODULE_DIR$/deployment/aws/terraform/.terraform/providers" />
       <excludeFolder url="file://$MODULE_DIR$/sample-api/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/deployment/aws/terraform/.terraform" />
+      <excludeFolder url="file://$MODULE_DIR$/sample-fe/.angular/cache" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
